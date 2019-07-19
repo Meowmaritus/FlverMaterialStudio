@@ -33,17 +33,17 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <ListView Grid.Column="0" Name="ListViewFLVERMeshes" SelectionChanged="ListViewFLVERMeshes_SelectionChanged" >
+            <ListView Grid.Column="0" Name="ListViewFlverMaterials" SelectionChanged="ListViewFlverMaterials_SelectionChanged" >
 
             </ListView>
 
             <Label Grid.Column="1" Margin="10,11,0,0" Content="Material Name:" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-            <TextBox Grid.Column="1" Margin="133,10,10,0" Name="TextBoxMaterialName" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="26"/>
+            <TextBox Grid.Column="1" Margin="133,10,10,0" Name="TextBoxMaterialName" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="26" TextChanged="TextBoxMaterialName_TextChanged"/>
 
             <Label Grid.Column="1" Margin="10,41,0,0" Content="Material Definition:" VerticalAlignment="Top" HorizontalAlignment="Left"/>
             <TextBox Grid.Column="1" Margin="133,41,10,0" Name="TextBoxMaterialDefinition" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="26"/>
 
-            <TabControl Name="MainTabControl" Grid.Column="1" Margin="10,78,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Height="38" Width="151" SelectionChanged="MainTabControl_SelectionChanged" >
+            <TabControl Name="MainTabControl" Grid.Column="1" Margin="10,78,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Height="22" Width="151" SelectionChanged="MainTabControl_SelectionChanged" >
                 <TabItem Name="TabTextureMaps" Header="Texture Maps"/>
                 <TabItem Name="TabGXItems" Header="GX Items"/>
             </TabControl>

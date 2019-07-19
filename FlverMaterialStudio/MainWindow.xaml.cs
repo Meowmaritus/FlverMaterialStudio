@@ -25,14 +25,16 @@ namespace FlverMaterialStudio
     {
         string FlverPath = "";
         FLVER Flver = null;
-        int CurrentMeshIndex = -1;
-        FLVER.Mesh CurrentMesh = null;
+        int CurrentMaterialIndex = -1;
+        FLVER.Material CurrentMaterial = null;
         List<FLVER.Texture> CurrentMapList = new List<FLVER.Texture>();
         List<GXItemContainer> CurrentGXItemList = new List<GXItemContainer>();
         bool selectionChangeJustFailed = false;
         public MainWindow()
         {
             InitializeComponent();
+
+            SetIsEverythingDisabled(true);
         }
 
         void LoadFLVER(string path, FLVER f)
@@ -40,17 +42,18 @@ namespace FlverMaterialStudio
             ClearCurrentShit();
             FlverPath = path;
             Flver = f;
-            CurrentMeshIndex = -1;
+            CurrentMaterialIndex = -1;
             CurrentGXItemList.Clear();
-            CurrentMesh = null;
+            CurrentMaterial = null;
             CurrentMapList = null;
-            ListViewFLVERMeshes.Items.Clear();
+            ListViewFlverMaterials.Items.Clear();
             int i = 0;
-            foreach (var m in f.Meshes)
+            foreach (var m in f.Materials)
             {
-                ListViewFLVERMeshes.Items.Add(new Label() { Content = $"[{i++}]{(m.DefaultBoneIndex >= 0 ? $" {f.Bones[m.DefaultBoneIndex]}" : "")}" });
+                ListViewFlverMaterials.Items.Add(new Label() { Content = $"[{i++}] {m.Name}" });
             }
             TabGXItems.IsEnabled = (Flver.Header.Version >= 0x20010);
+            SetIsEverythingDisabled(true);
         }
 
         void SwitchTabs(bool isTextureMapsTab)
@@ -63,10 +66,10 @@ namespace FlverMaterialStudio
 
         bool SaveCurrentShitToMesh()
         {
-            if (CurrentMesh == null)
+            if (CurrentMaterial == null)
                 return true;
-            Flver.Materials[CurrentMesh.MaterialIndex].Name = TextBoxMaterialName.Text;
-            Flver.Materials[CurrentMesh.MaterialIndex].MTD = TextBoxMaterialDefinition.Text;
+            CurrentMaterial.Name = TextBoxMaterialName.Text;
+            CurrentMaterial.MTD = TextBoxMaterialDefinition.Text;
 
             bool didShitFail = false;
 
@@ -74,10 +77,10 @@ namespace FlverMaterialStudio
             {
                 try
                 {
-                    Flver.GXLists[Flver.Materials[CurrentMesh.MaterialIndex].GXIndex].Clear();
+                    Flver.GXLists[CurrentMaterial.GXIndex].Clear();
                     foreach (var gx in CurrentGXItemList)
                     {
-                        Flver.GXLists[Flver.Materials[CurrentMesh.MaterialIndex].GXIndex]
+                        Flver.GXLists[CurrentMaterial.GXIndex]
                             .Add(new FLVER.GXItem(GetScuffedGXID(gx.ID), gx.Unk, GetGXBytesPacked(gx.Bytes)));
                     }
                 }
@@ -110,40 +113,42 @@ namespace FlverMaterialStudio
             }
             else
             {
-                return uint.Parse(input);
+                return string.IsNullOrEmpty(input) ?
+                    0x7FFFFFFF : uint.Parse(input);
             }
         }
 
         string GetUnscuffedGXID(uint input)
         {
-            if (Flver.Header.Version >= 0x20013)
+            if (input == 0x7FFFFFFF)
             {
-                if (input == 0x7FFFFFFF)
-                {
-                    return "";
-                }
-                else
-                {
-                    return Encoding.ASCII.GetString(BitConverter.GetBytes(input));
-                }
+                return "";
             }
             else
             {
-                return input.ToString();
+                if (Flver.Header.Version >= 0x20013)
+                {
+
+                    return Encoding.ASCII.GetString(BitConverter.GetBytes(input));
+                }
+                else
+                {
+                    return input.ToString();
+                }
             }
         }
 
         void LoadCurrentShitFromMesh()
         {
-            TextBoxMaterialName.Text = Flver.Materials[CurrentMesh.MaterialIndex].Name;
-            TextBoxMaterialDefinition.Text = Flver.Materials[CurrentMesh.MaterialIndex].MTD;
-            CurrentMapList = Flver.Materials[CurrentMesh.MaterialIndex].Textures;
+            TextBoxMaterialName.Text = CurrentMaterial.Name;
+            TextBoxMaterialDefinition.Text = CurrentMaterial.MTD;
+            CurrentMapList = CurrentMaterial.Textures;
 
             CurrentGXItemList.Clear();
 
             if (Flver.Header.Version >= 0x20010)
             {
-                foreach (var gx in Flver.GXLists[Flver.Materials[CurrentMesh.MaterialIndex].GXIndex])
+                foreach (var gx in Flver.GXLists[CurrentMaterial.GXIndex])
                 {
                     CurrentGXItemList.Add(new GXItemContainer()
                     {
@@ -163,35 +168,35 @@ namespace FlverMaterialStudio
             TextBoxMaterialName.Text = "";
             TextBoxMaterialDefinition.Text = "";
             DataGridTextureMaps.ItemsSource = null;
-            CurrentMeshIndex = -1;
+            CurrentMaterialIndex = -1;
             CurrentGXItemList.Clear();
-            CurrentMesh = null;
+            CurrentMaterial = null;
             CurrentMapList = null;
         }
 
-        bool SwitchToMesh(int meshIndex)
+        bool SwitchToMaterial(int materialIndex)
         {
             if (!SaveCurrentShitToMesh())
                 return false;
 
-            for (int i = 0; i < ListViewFLVERMeshes.Items.Count; i++)
+            for (int i = 0; i < ListViewFlverMaterials.Items.Count; i++)
             {
-                ((Label)ListViewFLVERMeshes.Items[i]).FontWeight = i == meshIndex ? FontWeights.Bold : FontWeights.Normal;
+                ((Label)ListViewFlverMaterials.Items[i]).FontWeight = i == materialIndex ? FontWeights.Bold : FontWeights.Normal;
             }
 
             
-            if (meshIndex >= 0 && meshIndex <= Flver.Meshes.Count)
+            if (materialIndex >= 0 && materialIndex <= Flver.Meshes.Count)
             {
-                CurrentMesh = Flver.Meshes[meshIndex];
+                CurrentMaterial = Flver.Materials[materialIndex];
                 LoadCurrentShitFromMesh();
             }
             else
             {
-                CurrentMesh = null;
+                CurrentMaterial = null;
                 ClearCurrentShit();
             }
 
-            CurrentMeshIndex = meshIndex;
+            CurrentMaterialIndex = materialIndex;
 
             return true;
         }
@@ -212,7 +217,7 @@ namespace FlverMaterialStudio
             }
         }
 
-        private void ListViewFLVERMeshes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ListViewFlverMaterials_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (selectionChangeJustFailed)
             {
@@ -220,24 +225,35 @@ namespace FlverMaterialStudio
                 return;
             }
 
-            if (!SwitchToMesh(ListViewFLVERMeshes.SelectedIndex))
+            if (!SwitchToMaterial(ListViewFlverMaterials.SelectedIndex))
             {
                 selectionChangeJustFailed = true;
-                ListViewFLVERMeshes.SelectedIndex = CurrentMeshIndex;
+                ListViewFlverMaterials.SelectedIndex = CurrentMaterialIndex;
             }
+
+            SetIsEverythingDisabled(false);
+        }
+
+        void SetIsEverythingDisabled(bool isEverythingDisabled)
+        {
+            
+            TextBoxMaterialDefinition.IsEnabled = !isEverythingDisabled;
+            TextBoxMaterialName.IsEnabled = !isEverythingDisabled;
+            DataGridTextureMaps.IsEnabled = !isEverythingDisabled;
+            MainTabControl.IsEnabled = !isEverythingDisabled;
+
+            
+            TextBoxMaterialDefinition.Opacity = isEverythingDisabled ? 0.5f : 1.0f;
+            TextBoxMaterialName.Opacity = isEverythingDisabled ? 0.5f : 1.0f;
+            DataGridTextureMaps.Opacity = isEverythingDisabled ? 0.5f : 1.0f;
+            MainTabControl.Opacity = isEverythingDisabled ? 0.5f : 1.0f;
         }
 
         void SetIsLoading(bool isLoading)
         {
-            ListViewFLVERMeshes.IsEnabled = !isLoading;
-            TextBoxMaterialDefinition.IsEnabled = !isLoading;
-            TextBoxMaterialName.IsEnabled = !isLoading;
-            DataGridTextureMaps.IsEnabled = !isLoading;
-
-            ListViewFLVERMeshes.Opacity = isLoading ? 0.5f : 1.0f;
-            TextBoxMaterialDefinition.Opacity = isLoading ? 0.5f : 1.0f;
-            TextBoxMaterialName.Opacity = isLoading ? 0.5f : 1.0f;
-            DataGridTextureMaps.Opacity = isLoading ? 0.5f : 1.0f;
+            ListViewFlverMaterials.IsEnabled = !isLoading;
+            ListViewFlverMaterials.Opacity = isLoading ? 0.5f : 1.0f;
+            SetIsEverythingDisabled(isLoading);
 
             if (isLoading)
                 Cursor = Cursors.Wait;
@@ -255,7 +271,7 @@ namespace FlverMaterialStudio
                     SFHelper.WriteFile(Flver, FlverPath);
                 }
                 Dispatcher.Invoke(() => SetIsLoading(false));
-            }), System.Windows.Threading.DispatcherPriority.Background);
+            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
             
         }
 
@@ -275,6 +291,11 @@ namespace FlverMaterialStudio
                 SwitchTabs(isTextureMapsTab: true);
             else if (MainTabControl.SelectedItem == TabGXItems)
                 SwitchTabs(isTextureMapsTab: false);
+        }
+
+        private void TextBoxMaterialName_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ((Label)ListViewFlverMaterials.SelectedItem).Content = TextBoxMaterialName.Text;
         }
     }
 }
