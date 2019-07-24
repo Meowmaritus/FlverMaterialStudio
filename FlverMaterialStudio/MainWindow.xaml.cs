@@ -23,6 +23,7 @@ namespace FlverMaterialStudio
     /// </summary>
     public partial class MainWindow : Window
     {
+        public string AutoLoadFlverPath = null;
         string FlverPath = "";
         FLVER Flver = null;
         int CurrentMaterialIndex = -1;
@@ -81,7 +82,7 @@ namespace FlverMaterialStudio
                     foreach (var gx in CurrentGXItemList)
                     {
                         Flver.GXLists[CurrentMaterial.GXIndex]
-                            .Add(new FLVER.GXItem(GetScuffedGXID(gx.ID), gx.Unk, GetGXBytesPacked(gx.Bytes)));
+                            .Add(new FLVER.GXItem(gx.ID, gx.Unk, GetGXBytesPacked(gx.Bytes)));
                     }
                 }
                 catch (Exception ex)
@@ -102,42 +103,6 @@ namespace FlverMaterialStudio
                 .ToArray();
         }
 
-        uint GetScuffedGXID(string input)
-        {
-            if (input.Length > 4)
-                input = input.Substring(0, 4);
-            if (Flver.Header.Version >= 0x20013)
-            {
-                return string.IsNullOrEmpty(input) ?
-                    0x7FFFFFFF : BitConverter.ToUInt32(Encoding.ASCII.GetBytes(input), 0);
-            }
-            else
-            {
-                return string.IsNullOrEmpty(input) ?
-                    0x7FFFFFFF : uint.Parse(input);
-            }
-        }
-
-        string GetUnscuffedGXID(uint input)
-        {
-            if (input == 0x7FFFFFFF)
-            {
-                return "";
-            }
-            else
-            {
-                if (Flver.Header.Version >= 0x20013)
-                {
-
-                    return Encoding.ASCII.GetString(BitConverter.GetBytes(input));
-                }
-                else
-                {
-                    return input.ToString();
-                }
-            }
-        }
-
         void LoadCurrentShitFromMesh()
         {
             TextBoxMaterialName.Text = CurrentMaterial.Name;
@@ -152,7 +117,7 @@ namespace FlverMaterialStudio
                 {
                     CurrentGXItemList.Add(new GXItemContainer()
                     {
-                        ID = GetUnscuffedGXID(gx.ID),
+                        ID = gx.ID,
                         Bytes = string.Join(" ", gx.Data.Select(g => g.ToString("X2"))),
                         Unk = gx.Unk04,
                     });
@@ -296,6 +261,23 @@ namespace FlverMaterialStudio
         private void TextBoxMaterialName_TextChanged(object sender, TextChangedEventArgs e)
         {
             ((Label)ListViewFlverMaterials.SelectedItem).Content = TextBoxMaterialName.Text;
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(AutoLoadFlverPath))
+            {
+                try
+                {
+                    var loadedFile = SFHelper.ReadFile<FLVER>(this, AutoLoadFlverPath);
+                    TextBlockRunCurrentlyEditing.Text = loadedFile.Uri;
+                    LoadFLVER(loadedFile.Uri, (FLVER)loadedFile.File);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Unable to open file; Exception encountered:\n\n{ex}");
+                }
+            }
         }
     }
 }

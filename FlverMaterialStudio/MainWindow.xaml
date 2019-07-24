@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FlverMaterialStudio"
         mc:Ignorable="d"
-        Title="FLVER Material Studio Beta V0.2" Height="480" Width="900"
+        Title="FLVER Material Studio Beta V0.4" Height="480" Width="900"
         Background="LightGray"
+        Loaded="Window_Loaded"
         >
 
     <Window.CommandBindings>
@@ -38,10 +39,10 @@
             </ListView>
 
             <Label Grid.Column="1" Margin="10,11,0,0" Content="Material Name:" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-            <TextBox Grid.Column="1" Margin="133,10,10,0" Name="TextBoxMaterialName" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="26" TextChanged="TextBoxMaterialName_TextChanged"/>
+            <TextBox Grid.Column="1" Margin="133,10,10,0" Name="TextBoxMaterialName" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="26" TextChanged="TextBoxMaterialName_TextChanged" VerticalContentAlignment="Center"/>
 
             <Label Grid.Column="1" Margin="10,41,0,0" Content="Material Definition:" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-            <TextBox Grid.Column="1" Margin="133,41,10,0" Name="TextBoxMaterialDefinition" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="26"/>
+            <TextBox Grid.Column="1" Margin="133,41,10,0" Name="TextBoxMaterialDefinition" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="26" VerticalContentAlignment="Center" />
 
             <TabControl Name="MainTabControl" Grid.Column="1" Margin="10,78,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Height="22" Width="151" SelectionChanged="MainTabControl_SelectionChanged" >
                 <TabItem Name="TabTextureMaps" Header="Texture Maps"/>
