@@ -260,7 +260,7 @@ namespace FlverMaterialStudio
 
         private void TextBoxMaterialName_TextChanged(object sender, TextChangedEventArgs e)
         {
-            ((Label)ListViewFlverMaterials.SelectedItem).Content = TextBoxMaterialName.Text;
+            ((Label)ListViewFlverMaterials.SelectedItem).Content = $"[{ListViewFlverMaterials.SelectedIndex}] {TextBoxMaterialName.Text}";
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
