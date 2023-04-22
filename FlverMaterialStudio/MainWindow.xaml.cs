@@ -25,10 +25,10 @@ namespace FlverMaterialStudio
     {
         public string AutoLoadFlverPath = null;
         string FlverPath = "";
-        FLVER Flver = null;
+        FLVER2 Flver = null;
         int CurrentMaterialIndex = -1;
-        FLVER.Material CurrentMaterial = null;
-        List<FLVER.Texture> CurrentMapList = new List<FLVER.Texture>();
+        FLVER2.Material CurrentMaterial = null;
+        List<FLVER2.Texture> CurrentMapList = new List<FLVER2.Texture>();
         List<GXItemContainer> CurrentGXItemList = new List<GXItemContainer>();
         bool selectionChangeJustFailed = false;
         public MainWindow()
@@ -38,7 +38,7 @@ namespace FlverMaterialStudio
             SetIsEverythingDisabled(true);
         }
 
-        void LoadFLVER(string path, FLVER f)
+        void LoadFLVER(string path, FLVER2 f)
         {
             ClearCurrentShit();
             FlverPath = path;
@@ -82,7 +82,7 @@ namespace FlverMaterialStudio
                     foreach (var gx in CurrentGXItemList)
                     {
                         Flver.GXLists[CurrentMaterial.GXIndex]
-                            .Add(new FLVER.GXItem(gx.ID, gx.Unk, GetGXBytesPacked(gx.Bytes)));
+                            .Add(new FLVER2.GXItem(gx.ID, gx.Unk, GetGXBytesPacked(gx.Bytes)));
                     }
                 }
                 catch (Exception ex)
@@ -176,9 +176,9 @@ namespace FlverMaterialStudio
 
             if (browseDialog.ShowDialog() == true)
             {
-                var loadedFile = SFHelper.ReadFile<FLVER>(this, browseDialog.FileName);
+                var loadedFile = SFHelper.ReadFile<FLVER2>(this, browseDialog.FileName);
                 TextBlockRunCurrentlyEditing.Text = loadedFile.Uri;
-                LoadFLVER(loadedFile.Uri, (FLVER)loadedFile.File);
+                LoadFLVER(loadedFile.Uri, (FLVER2)loadedFile.File);
             }
         }
 
@@ -269,9 +269,9 @@ namespace FlverMaterialStudio
             {
                 try
                 {
-                    var loadedFile = SFHelper.ReadFile<FLVER>(this, AutoLoadFlverPath);
+                    var loadedFile = SFHelper.ReadFile<FLVER2>(this, AutoLoadFlverPath);
                     TextBlockRunCurrentlyEditing.Text = loadedFile.Uri;
-                    LoadFLVER(loadedFile.Uri, (FLVER)loadedFile.File);
+                    LoadFLVER(loadedFile.Uri, (FLVER2)loadedFile.File);
                 }
                 catch (Exception ex)
                 {
